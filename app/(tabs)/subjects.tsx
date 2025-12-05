@@ -1,5 +1,3 @@
-// app/(tabs)/subjects.tsx
-
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -14,12 +12,14 @@ import { useCourses } from '../../src/CoursesContext';
 import type { Course } from '../../src/models';
 import { calculateGPA } from '../../src/gradeUtils';
 
+// SectionList에서 사용할 섹션 타입
 interface CourseSection {
   title: string;      // 학기 이름 (예: '25-2', '25-1')
   isLatest: boolean;  // 가장 최근 학기 여부
   data: Course[];
 }
 
+// 필터/정렬 관련 타입
 type SemesterFilter = 'latest' | 'all';
 type MajorFilter = 'all' | 'major' | 'general';
 type SortMode = 'default' | 'name' | 'credits';
@@ -28,14 +28,16 @@ export default function SubjectsScreen() {
   const router = useRouter();
   const { courses } = useCourses();
 
+  // 필터 상태: 학기 / 전공 여부 / 정렬 기준
   const [semesterFilter, setSemesterFilter] = useState<SemesterFilter>('all');
   const [majorFilter, setMajorFilter] = useState<MajorFilter>('all');
   const [sortMode, setSortMode] = useState<SortMode>('default');
 
-  // 모든 과목을 학기별로 묶은 기본 섹션
+  // 1) 모든 과목을 학기별로 그룹화하여 섹션으로 변환
   const allSections: CourseSection[] = useMemo(() => {
     if (!courses || courses.length === 0) return [];
 
+    // 과목에서 학기 문자열만 추출 후 중복 제거
     const rawSemesters = Array.from(
       new Set(
         courses
@@ -44,17 +46,18 @@ export default function SubjectsScreen() {
       ),
     );
 
-    // 최신 학기가 위로 오도록 정렬 (문자열 기준)
+    // 최신 학기가 위로 오도록 내림차순 정렬
     rawSemesters.sort((a, b) => (a > b ? -1 : a < b ? 1 : 0));
     const latestSemester = rawSemesters[0];
 
+    // 학기별로 과목 묶기
     const result: CourseSection[] = rawSemesters.map((sem) => ({
       title: sem,
       isLatest: sem === latestSemester,
       data: courses.filter((c) => c.semester === sem),
     }));
 
-    // 학기가 비어 있는 과목이 있으면 별도 섹션
+    // 학기 정보가 없는 과목은 별도 섹션으로 추가
     const noSemesterCourses = courses.filter(
       (c) => !c.semester || c.semester.trim().length === 0,
     );
@@ -69,12 +72,13 @@ export default function SubjectsScreen() {
     return result;
   }, [courses]);
 
-  // 상단 요약용: 가장 최근 학기 정보 + 전공/교양 비율
+  // 2) 상단 요약에 사용되는 “가장 최근 학기 정보”
   const latestInfo = useMemo(() => {
     if (!allSections.length) return null;
     const latest = allSections.find((s) => s.isLatest);
     if (!latest) return null;
 
+    // 최신 학기 과목들로 GPA 계산
     const { totalCredits, gpa } = calculateGPA(latest.data);
     const majorCount = latest.data.filter((c) => c.isMajor).length;
     const generalCount = latest.data.length - majorCount;
@@ -89,11 +93,12 @@ export default function SubjectsScreen() {
     };
   }, [allSections]);
 
-  // 필터/정렬이 적용된 섹션들
+  // 3) 화면에 실제로 표시될 섹션 (필터/정렬 적용 후)
   const filteredSections: CourseSection[] = useMemo(() => {
     if (!allSections.length) return [];
 
     return allSections
+      // 학기 필터(이번 학기 / 전체 학기)
       .filter((section) =>
         semesterFilter === 'all' ? true : section.isLatest,
       )
@@ -107,24 +112,29 @@ export default function SubjectsScreen() {
           data = data.filter((c) => !c.isMajor);
         }
 
-        // 정렬
+        // 정렬 모드 적용
         let sorted = [...data];
         if (sortMode === 'name') {
+          // 과목 이름 기준 오름차순
           sorted.sort((a, b) => a.name.localeCompare(b.name));
         } else if (sortMode === 'credits') {
+          // 학점 기준 내림차순
           sorted.sort((a, b) => Number(b.credits) - Number(a.credits));
         }
-        // default는 원래 순서 유지
+        // default 모드에서는 원래 순서 유지
 
         return {
           ...section,
           data: sorted,
         };
       })
+      // 필터 후 과목이 하나도 없는 섹션은 제외
       .filter((section) => section.data.length > 0);
   }, [allSections, semesterFilter, majorFilter, sortMode]);
 
+  // 각 과목 카드 렌더링
   const renderCourseItem = ({ item }: { item: Course }) => {
+    // grade가 없거나 '-'인 경우 아직 진행 중인 과목으로 간주
     const isOngoing = !item.grade || item.grade === '-';
     const statusLabel = isOngoing ? '진행 중' : '완료';
 
@@ -132,8 +142,10 @@ export default function SubjectsScreen() {
       <TouchableOpacity
         style={styles.card}
         activeOpacity={0.8}
+        // 과목 상세(설정) 화면으로 이동
         onPress={() => router.push(`/course/${item.id}`)}
       >
+        {/* 상단: 과목 이름, 학기, 전공/교양, 진행 상태 */}
         <View style={styles.cardHeader}>
           <View style={{ flex: 1 }}>
             <Text style={styles.courseName} numberOfLines={1}>
@@ -143,6 +155,7 @@ export default function SubjectsScreen() {
           </View>
 
           <View style={styles.badgeRow}>
+            {/* 전공/교양 뱃지 */}
             <View
               style={[
                 styles.badge,
@@ -154,6 +167,7 @@ export default function SubjectsScreen() {
               </Text>
             </View>
 
+            {/* 진행 중 / 완료 상태 뱃지 */}
             <View
               style={[
                 styles.badge,
@@ -165,11 +179,13 @@ export default function SubjectsScreen() {
           </View>
         </View>
 
+        {/* 학점 정보 */}
         <View style={styles.cardRow}>
           <Text style={styles.cardLabel}>학점</Text>
           <Text style={styles.cardValue}>{item.credits}학점</Text>
         </View>
 
+        {/* 성적 정보 */}
         <View style={styles.cardRow}>
           <Text style={styles.cardLabel}>성적</Text>
           <Text style={[styles.cardValue, isOngoing && styles.pendingGrade]}>
@@ -180,6 +196,7 @@ export default function SubjectsScreen() {
     );
   };
 
+  // 섹션 헤더(학기 제목) 렌더링
   const renderSectionHeader = ({ section }: { section: CourseSection }) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>
@@ -189,6 +206,7 @@ export default function SubjectsScreen() {
     </View>
   );
 
+  // 필터/정렬용 칩 컴포넌트
   const renderFilterChip = (
     label: string,
     active: boolean,
@@ -215,11 +233,12 @@ export default function SubjectsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* 상단 헤더 */}
+      {/* 상단 헤더 영역: 제목 + 이번 학기 요약 + 과목 추가 버튼 */}
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>내 과목 관리</Text>
 
+          {/* 최신 학기 요약 정보가 있는 경우에만 표시 */}
           {latestInfo && (
             <>
               <Text style={styles.summaryLine}>
@@ -234,6 +253,7 @@ export default function SubjectsScreen() {
           )}
         </View>
 
+        {/* 과목 추가 화면으로 이동 버튼 */}
         <TouchableOpacity
           style={styles.addButton}
           activeOpacity={0.8}
@@ -245,6 +265,7 @@ export default function SubjectsScreen() {
 
       {/* 필터/정렬 바 */}
       <View style={styles.filterBar}>
+        {/* 학기 필터 (이번 학기 / 전체 학기) */}
         <View style={styles.filterRow}>
           {renderFilterChip(
             '이번 학기',
@@ -258,6 +279,7 @@ export default function SubjectsScreen() {
           )}
         </View>
 
+        {/* 전공/교양 필터 */}
         <View style={styles.filterRow}>
           {renderFilterChip(
             '전체',
@@ -276,6 +298,7 @@ export default function SubjectsScreen() {
           )}
         </View>
 
+        {/* 정렬 옵션 (기본 / 이름 / 학점) */}
         <View style={styles.filterRow}>
           {renderFilterChip(
             '정렬: 기본',
@@ -295,8 +318,9 @@ export default function SubjectsScreen() {
         </View>
       </View>
 
-      {/* 리스트 영역 */}
+      {/* 과목 리스트 영역 */}
       {filteredSections.length === 0 ? (
+        // 필터 결과가 없을 때 빈 상태 안내
         <View style={styles.emptyContainer}>
           <Text style={styles.emptyTitle}>표시할 과목이 없습니다.</Text>
           <Text style={styles.emptyText}>
@@ -304,6 +328,7 @@ export default function SubjectsScreen() {
           </Text>
         </View>
       ) : (
+        // 학기별 섹션 리스트
         <SectionList
           sections={filteredSections}
           keyExtractor={(item) => item.id}
@@ -318,6 +343,7 @@ export default function SubjectsScreen() {
   );
 }
 
+// 스타일 정의
 const styles = StyleSheet.create({
   container: {
     flex: 1,

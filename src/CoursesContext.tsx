@@ -1,5 +1,3 @@
-// src/CoursesContext.tsx
-
 import React, {
   createContext,
   useContext,
@@ -25,7 +23,6 @@ const CoursesContext = createContext<CoursesContextValue | undefined>(
 );
 
 export function CoursesProvider({ children }: { children: ReactNode }) {
-  // ✅ 목업 완전 제거: 처음엔 비어 있는 배열
   const [courses, setCourses] = useState<Course[]>([]);
 
   const { totalCredits, gpa } = useMemo(() => {

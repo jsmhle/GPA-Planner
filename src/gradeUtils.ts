@@ -1,5 +1,3 @@
-// src/gradeUtils.ts
-
 import { Course, GradeLetter, GPAResult } from './models';
 
 // 성적 → 평점 매핑
@@ -22,7 +20,7 @@ export function gradeToPoint(grade?: GradeLetter): number | null {
   return gradePointMap[grade] ?? null;
 }
 
-// ✅ 과목 배열 기준으로 GPA 계산 (방어코드 포함)
+// 과목 배열 기준으로 GPA 계산 (방어코드 포함)
 export function calculateGPA(courses: Course[] | undefined | null): GPAResult {
   if (!Array.isArray(courses) || courses.length === 0) {
     return {
@@ -91,7 +89,7 @@ export interface TargetGPAResult {
   requiredAveragePoint: number | null; // 남은 과목에서 필요한 평균 평점 (4.5 만점 기준)
 }
 
-// ✅ 목표 GPA를 맞추기 위한 필요 평균 평점 계산
+// 목표 GPA를 맞추기 위한 필요 평균 평점 계산
 export function calculateRequiredAverageForTargetGPA(
   input: TargetGPAInput,
 ): TargetGPAResult {

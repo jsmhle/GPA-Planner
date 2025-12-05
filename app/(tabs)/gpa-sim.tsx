@@ -1,5 +1,3 @@
-// app/(tabs)/gpa-sim.tsx
-
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -19,19 +17,23 @@ import {
 } from '../../src/gradeUtils';
 
 export default function GpaSimScreen() {
+  // 전체 과목 정보 컨텍스트에서 가져오기
   const { courses } = useCourses();
 
+  // 입력값(목표 GPA, 남은 학점) 상태
   const [targetGpaText, setTargetGpaText] = useState('');
   const [remainingCreditsText, setRemainingCreditsText] = useState('');
   const [result, setResult] = useState<TargetGPAResult | null>(null);
 
-  // 현재까지 GPA 요약
+  // 현재까지 GPA 계산(성적이 있는 과목 기준)
   const current = useMemo(() => calculateGPA(courses), [courses]);
 
+  // 버튼 클릭 시 시뮬레이션 수행
   const handleSimulate = () => {
     const targetGpa = Number(targetGpaText);
     const remainingCredits = Number(remainingCreditsText);
 
+    // 입력값 검증
     if (isNaN(targetGpa) || targetGpa <= 0 || targetGpa > 4.5) {
       Alert.alert('입력 오류', '목표 GPA는 0 ~ 4.5 사이의 숫자로 입력해 주세요.');
       return;
@@ -41,11 +43,12 @@ export default function GpaSimScreen() {
       return;
     }
 
-    // 이미 성적이 확정된 과목들만 사용 (grade가 '-'가 아닌 것들)
+    // 이미 성적이 확정된 과목만 대상으로 사용(grade가 '-'가 아닌 과목)
     const completedCourses = Array.isArray(courses)
       ? courses.filter((c) => c.grade && c.grade !== '-')
       : [];
 
+    // 목표 GPA를 맞추기 위해 필요한 평균 평점 계산
     const r = calculateRequiredAverageForTargetGPA({
       completedCourses,
       remainingCredits,
@@ -57,9 +60,10 @@ export default function GpaSimScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* 화면 제목 */}
       <Text style={styles.title}>GPA 시뮬레이션</Text>
 
-      {/* 현재까지 성적 요약 */}
+      {/* 현재까지 성적 요약 카드 */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>현재까지 성적</Text>
         <Text style={styles.cardText}>
@@ -74,7 +78,7 @@ export default function GpaSimScreen() {
         </Text>
       </View>
 
-      {/* 목표 GPA 입력 */}
+      {/* 목표 GPA 입력 필드 */}
       <View style={styles.field}>
         <Text style={styles.label}>목표 총 GPA</Text>
         <TextInput
@@ -87,7 +91,7 @@ export default function GpaSimScreen() {
         />
       </View>
 
-      {/* 남은 학점 입력 */}
+      {/* 남은 학점 입력 필드 */}
       <View style={styles.field}>
         <Text style={styles.label}>앞으로 들을 총 학점 수</Text>
         <TextInput
@@ -105,7 +109,7 @@ export default function GpaSimScreen() {
         <Text style={styles.buttonText}>필요한 평균 평점 계산</Text>
       </TouchableOpacity>
 
-      {/* 결과 표시 */}
+      {/* 결과 표시 카드 */}
       {result && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>결과</Text>
@@ -134,6 +138,7 @@ export default function GpaSimScreen() {
   );
 }
 
+// 화면 스타일 정의
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

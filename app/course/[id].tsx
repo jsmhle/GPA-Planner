@@ -1,5 +1,3 @@
-// app/course/[id].tsx
-
 import React, { useEffect, useState } from 'react';
 import {
   View,

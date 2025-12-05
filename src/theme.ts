@@ -1,5 +1,3 @@
-// src/theme.ts
-
 import { colors } from '../constants/colors';
 
 export const theme = {

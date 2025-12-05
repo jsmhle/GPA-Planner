@@ -1,5 +1,3 @@
-// app/(tabs)/_layout.tsx
-
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +6,7 @@ import { colors } from '../../constants/colors';
 export default function TabsLayout() {
   return (
     <Tabs
+      // 공통 탭 스타일 설정
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
@@ -18,6 +17,7 @@ export default function TabsLayout() {
         },
       }}
     >
+      {/* 내 과목 탭 */}
       <Tabs.Screen
         name="subjects"
         options={{
@@ -28,6 +28,7 @@ export default function TabsLayout() {
         }}
       />
 
+      {/* GPA 시뮬레이터 탭 */}
       <Tabs.Screen
         name="gpa-sim"
         options={{
@@ -38,6 +39,7 @@ export default function TabsLayout() {
         }}
       />
 
+      {/* 할 일 & 캘린더 탭 */}
       <Tabs.Screen
         name="tasks"
         options={{
@@ -48,6 +50,7 @@ export default function TabsLayout() {
         }}
       />
 
+      {/* 시간표 이미지 탭 */}
       <Tabs.Screen
         name="timetable"
         options={{

@@ -1,5 +1,3 @@
-// app/add-course.tsx
-
 import React, { useState } from 'react';
 import {
   View,

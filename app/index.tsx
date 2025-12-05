@@ -1,5 +1,3 @@
-// app/index.tsx
-
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -9,7 +7,7 @@ export default function HomeScreen() {
   const router = useRouter();
 
   const handleStart = () => {
-    // 처음 들어가면 과목 탭으로 이동 (원하면 gpa-sim이나 tasks로 바꿔도 됨)
+    // 처음 들어가면 과목 탭으로 이동
     router.replace('/(tabs)/subjects');
   };
 

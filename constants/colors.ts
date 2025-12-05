@@ -1,5 +1,3 @@
-// constants/colors.ts
-
 export type AppColors = {
   bg: string;
   card: string;

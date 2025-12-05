@@ -38,7 +38,7 @@ const HolidayContext = createContext<HolidayContextValue | undefined>(
   undefined,
 );
 
-// 공휴일 API 키 (URL 인코딩 그대로 사용)
+// 공휴일 API 키
 const SERVICE_KEY =
   'r%2BUmzWhugvLgDmCOnfr6tDQeIQ7SzRwfwDq858BYZrYv90GNSrYVvOiVY6C00dan3iao9T9OCExwxpjQNupVaQ%3D%3D';
 

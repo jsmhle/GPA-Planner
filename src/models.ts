@@ -1,5 +1,3 @@
-// src/models.ts
-
 // 성적 등급 타입
 export type GradeLetter =
   | 'A+'
