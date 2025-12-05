@@ -2,7 +2,7 @@ import React from 'react';
 import { Stack } from 'expo-router';
 import { HolidayProvider } from './context/HolidayContext';
 import { CoursesProvider } from '../src/CoursesContext';
-import { colors } from '../constants/colors'; // ✅ 여기! ../ 로 수정
+import { colors } from '../constants/colors';
 
 export default function RootLayout() {
   return (
